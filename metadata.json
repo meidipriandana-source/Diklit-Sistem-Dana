@@ -1,0 +1,8 @@
+{
+  "name": "Diklit Sistem Informasi 26",
+  "description": "Sistem Informasi Diklit RSUD dr.H.Jusuf.SK Tarakan Kalimantan Utara.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": []
+}

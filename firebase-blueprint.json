@@ -1,0 +1,47 @@
+{
+  "entities": {
+    "Certificate": {
+      "title": "Certificate",
+      "description": "Represents a professional certificate held by an employee.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Name of the certificate" },
+        "owner": { "type": "string", "description": "Name of the employee owner" },
+        "nip": { "type": "string", "description": "NIP or NRPTT of the owner" },
+        "skp": { "type": "number", "description": "SKP value" },
+        "fileUrl": { "type": "string", "description": "URL or Jabatan depending on context" },
+        "fileName": { "type": "string", "description": "Original file name of the PDF" },
+        "status": { "type": "string", "description": "Status of the certificate (e.g., Aktif)" },
+        "issueDate": { "type": "string", "description": "Date the certificate was issued" },
+        "expiryDate": { "type": "string", "description": "Date the certificate expires" },
+        "ownerId": { "type": "string", "description": "UID of the user who added this record" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["name", "owner", "ownerId", "updatedAt"]
+    },
+    "Employee": {
+      "title": "Employee",
+      "description": "Represents an employee in the system.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "Full name of the employee" },
+        "role": { "type": "string", "description": "Job title or role" },
+        "dept": { "type": "string", "description": "Department or unit" },
+        "nip": { "type": "string", "description": "NIP or NRPTT" },
+        "ownerId": { "type": "string", "description": "UID of the user who created this profile" },
+        "updatedAt": { "type": "string", "format": "date-time", "description": "Last update timestamp" }
+      },
+      "required": ["name", "ownerId", "updatedAt"]
+    }
+  },
+  "firestore": {
+    "/certificates/{certificateId}": {
+      "schema": "Certificate",
+      "description": "Collection of certificates."
+    },
+    "/employees/{employeeId}": {
+      "schema": "Employee",
+      "description": "Collection of employee profiles."
+    }
+  }
+}

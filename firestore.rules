@@ -1,0 +1,73 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(data) {
+      return isSignedIn() && data.ownerId == request.auth.uid;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // --- Certificates ---
+    match /certificates/{certificateId} {
+      allow read: if isOwner(resource.data);
+      allow create: if isSignedIn() 
+                    && isValidId(certificateId)
+                    && isValidCertificate(request.resource.data)
+                    && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isOwner(resource.data)
+                    && isValidCertificate(request.resource.data)
+                    && request.resource.data.ownerId == resource.data.ownerId; // Immutable ownerId
+      allow delete: if isOwner(resource.data);
+
+      function isValidCertificate(data) {
+        return data.keys().hasAll(['name', 'owner', 'ownerId', 'updatedAt'])
+               && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+               && data.owner is string && data.owner.size() > 0 && data.owner.size() <= 200
+               && data.ownerId is string && data.ownerId.size() <= 128
+               && data.updatedAt is string // For now, the app uses ISO strings
+               && (!('nip' in data) || (data.nip is string && data.nip.size() <= 100))
+               && (!('skp' in data) || (data.skp is number))
+               && (!('status' in data) || (data.status is string && data.status.size() <= 50))
+               && (!('fileUrl' in data) || (data.fileUrl is string && data.fileUrl.size() <= 1000))
+               && (!('fileName' in data) || (data.fileName is string && data.fileName.size() <= 500))
+               && (!('issueDate' in data) || (data.issueDate is string && data.issueDate.size() <= 50))
+               && (!('expiryDate' in data) || (data.expiryDate is string && data.expiryDate.size() <= 50));
+      }
+    }
+
+    // --- Employees ---
+    match /employees/{employeeId} {
+      allow read: if isOwner(resource.data);
+      allow create: if isSignedIn()
+                    && isValidId(employeeId)
+                    && isValidEmployee(request.resource.data)
+                    && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isOwner(resource.data)
+                    && isValidEmployee(request.resource.data)
+                    && request.resource.data.ownerId == resource.data.ownerId; // Immutable ownerId
+      allow delete: if isOwner(resource.data);
+
+      function isValidEmployee(data) {
+        return data.keys().hasAll(['name', 'ownerId', 'updatedAt'])
+               && data.name is string && data.name.size() > 0 && data.name.size() <= 200
+               && data.ownerId is string && data.ownerId.size() <= 128
+               && data.updatedAt is string
+               && (!('role' in data) || (data.role is string && data.role.size() <= 200))
+               && (!('dept' in data) || (data.dept is string && data.dept.size() <= 200))
+               && (!('nip' in data) || (data.nip is string && data.nip.size() <= 100));
+      }
+    }
+  }
+}
